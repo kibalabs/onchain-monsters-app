@@ -81,6 +81,7 @@ export const HomePage = (): React.ReactElement => {
     stakingContract.allowance(account.address, ONCHAIN_MONSTERS_ADDRESS).then((newAllowance: BigNumber): void => {
       setHasApprovedDoughSpend(newAllowance.gt(ethers.utils.parseEther('1')));
     });
+    // TODO(krishan711): change the check above to > 1 when the supply is over 4000 (and other tiers after)
     // contract.totalSupply().then((newMonsterSupply: number): void => {
     //   setMonsterSupply(newMonsterSupply);
     // });
@@ -218,7 +219,9 @@ export const HomePage = (): React.ReactElement => {
     setBuyMonsterTransactionReceipt(null);
     const contractWithSigner = contract.connect(account.signer);
     try {
-      const newBuyMonsterTransaction = await contractWithSigner.mintMonster();
+      const gasEstimate = await contractWithSigner.estimateGas.mintMonster();
+      // NOTE(krishan711): not sure why but the gas is estimated wrongly?!
+      const newBuyMonsterTransaction = await contractWithSigner.mintMonster({ gasLimit: Math.ceil(gasEstimate.toNumber() * 1.2) });
       setBuyMonsterTransaction(newBuyMonsterTransaction);
     } catch (error: unknown) {
       setBuyMonsterTransactionError(error as Error);
