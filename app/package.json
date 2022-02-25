@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "build": "build-react-app --config-modifier ./config.build.js",
-    "build-static": "build-react-app-static --config-modifier ./config.build.js",
     "start": "build-react-app --config-modifier ./config.build.js --start",
     "start-dev": "build-react-app --config-modifier ./config.build.js --start --dev",
     "clean": "rm -rf ./node_modules ./package-lock.json ./dist",
