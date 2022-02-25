@@ -5,10 +5,14 @@ import detectEthereumProvider from '@metamask/detect-provider';
 import { ethers } from 'ethers';
 import { toast } from 'react-toastify';
 
+type Account = {
+  address: string;
+  signer: ethers.Signer;
+}
+
 type AccountsControl = {
   web3: ethers.providers.Web3Provider | undefined | null;
-  accounts: ethers.Signer[] | undefined | null;
-  accountIds: string[] | undefined | null;
+  accounts: Account[] | undefined | null;
   onLinkAccountsClicked: () => void;
 }
 
@@ -18,15 +22,13 @@ interface IAccountControlProviderProps extends IMultiAnyChildProps {
 }
 
 export const AccountControlProvider = (props: IAccountControlProviderProps): React.ReactElement => {
-  const [accounts, setAccounts] = React.useState<ethers.Signer[] | undefined | null>(undefined);
-  const [accountIds, setAccountIds] = React.useState<string[] | undefined | null>(undefined);
+  const [accounts, setAccounts] = React.useState<Account[] | undefined | null>(undefined);
   const [web3, setWeb3] = React.useState<ethers.providers.Web3Provider | null | undefined>(undefined);
 
   const loadWeb3 = async (): Promise<void> => {
     const provider = await detectEthereumProvider();
     if (!provider) {
       setAccounts(null);
-      setAccountIds(null);
       return;
     }
     const web3Connection = new ethers.providers.Web3Provider(provider);
@@ -36,9 +38,10 @@ export const AccountControlProvider = (props: IAccountControlProviderProps): Rea
   const onAccountsChanged = React.useCallback(async (accountAddresses: string[]): Promise<void> => {
     // NOTE(krishan711): metamask only deals with one account at the moment but returns an array for future compatibility
     const linkedAccounts = accountAddresses.map((accountAddress: string): ethers.Signer => web3.getSigner(accountAddress));
-    setAccounts(linkedAccounts);
     Promise.all(linkedAccounts.map((account: ethers.Signer): Promise<string> => account.getAddress())).then((retrievedAccountIds: string[]): void => {
-      setAccountIds(retrievedAccountIds);
+      setAccounts(retrievedAccountIds.map((retrievedAccountId: string, index: number): Account => {
+        return { address: retrievedAccountId, signer: linkedAccounts[index] };
+      }));
     });
   }, [web3]);
 
@@ -73,7 +76,7 @@ export const AccountControlProvider = (props: IAccountControlProviderProps): Rea
   });
 
   return (
-    <AccountsContext.Provider value={{ accounts, accountIds, onLinkAccountsClicked, web3 }}>
+    <AccountsContext.Provider value={{ accounts, onLinkAccountsClicked, web3 }}>
       {props.children}
     </AccountsContext.Provider>
   );
@@ -87,7 +90,7 @@ export const useWeb3 = (): ethers.providers.Web3Provider | undefined | null => {
   return accountsControl.web3;
 };
 
-export const useAccounts = (): ethers.Signer[] | undefined | null => {
+export const useAccounts = (): Account[] | undefined | null => {
   const accountsControl = React.useContext(AccountsContext);
   if (!accountsControl) {
     throw Error('accountsControl has not been initialized correctly.');
@@ -95,15 +98,7 @@ export const useAccounts = (): ethers.Signer[] | undefined | null => {
   return accountsControl.accounts;
 };
 
-export const useAccountIds = (): string[] | undefined | null => {
-  const accountsControl = React.useContext(AccountsContext);
-  if (!accountsControl) {
-    throw Error('accountsControl has not been initialized correctly.');
-  }
-  return accountsControl.accountIds;
-};
-
-export const useAccount = (): ethers.Signer | undefined | null => {
+export const useAccount = (): Account | undefined | null => {
   const accounts = useAccounts();
   if (accounts === undefined) {
     return undefined;
@@ -115,20 +110,6 @@ export const useAccount = (): ethers.Signer | undefined | null => {
     return null;
   }
   return accounts[0];
-};
-
-export const useAccountId = (): string | undefined | null => {
-  const accountIds = useAccountIds();
-  if (accountIds === undefined) {
-    return undefined;
-  }
-  if (accountIds === null) {
-    return null;
-  }
-  if (accountIds.length === 0) {
-    return null;
-  }
-  return accountIds[0];
 };
 
 export const useOnLinkAccountsClicked = (): (() => void) => {

@@ -1,14 +1,15 @@
 import React from 'react';
 
-import { Alignment, Button, Direction, EqualGrid, IconButton, KibaIcon, LinkBase, LoadingSpinner, MarkdownText, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
+import { Alignment, Box, Button, Direction, EqualGrid, IconButton, Image, KibaIcon, LinkBase, LoadingSpinner, MarkdownText, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ethers } from 'ethers';
 
-import { useAccount, useAccountId, useOnLinkAccountsClicked, useWeb3 } from '../AccountContext';
+import { useAccount, useOnLinkAccountsClicked, useWeb3 } from '../AccountContext';
 import { SelectableView } from '../components/SelectableView';
 import { SponsorView } from '../components/SponsorView';
 import { Token, TokenCard } from '../components/TokenCard';
 import OnChainMonstersABI from '../OnChainMonstersABI.json';
 import OnChainMonstersStakingABI from '../OnChainMonstersStakingABI.json';
+import { truncateMiddle } from '@kibalabs/core';
 
 const arrayWithRange = (start: number, end: number): number[] => {
   return Array(end - start).fill().map((item, index) => start + index);
@@ -29,7 +30,6 @@ const ONCHAIN_MONSTERS_STAKING_ADDRESS = '0x10971797fcb9925d01ba067e51a6f8333ca0
 export const HomePage = (): React.ReactElement => {
   const web3 = useWeb3();
   const account = useAccount();
-  const accountId = useAccountId();
   const onLinkAccountsClicked = useOnLinkAccountsClicked();
   const colors = useColors();
   const [chosenTokenIds, setChosenTokenIds] = React.useState<number[]>([]);
@@ -69,40 +69,40 @@ export const HomePage = (): React.ReactElement => {
   }, [web3]);
 
   const loadData = React.useCallback(async () => {
-    if (!account || !accountId) {
+    if (!account) {
       return;
     }
-    stakingContract.getAllRewards(accountId).then((newStakingDoughAccumulated: BigNumber): void => {
+    stakingContract.getAllRewards(account.address).then((newStakingDoughAccumulated: BigNumber): void => {
       setStakingDoughAccumulated(newStakingDoughAccumulated);
     });
-    stakingContract.balanceOf(accountId).then((newDoughBalance: BigNumber): void => {
+    stakingContract.balanceOf(account.address).then((newDoughBalance: BigNumber): void => {
       setDoughBalance(newDoughBalance);
     });
-    stakingContract.allowance(accountId, ONCHAIN_MONSTERS_ADDRESS).then((newAllowance: BigNumber): void => {
+    stakingContract.allowance(account.address, ONCHAIN_MONSTERS_ADDRESS).then((newAllowance: BigNumber): void => {
       setHasApprovedDoughSpend(newAllowance.gt(ethers.utils.parseEther('1')));
     });
     // contract.totalSupply().then((newMonsterSupply: number): void => {
     //   setMonsterSupply(newMonsterSupply);
     // });
-    contract.isApprovedForAll(accountId, ONCHAIN_MONSTERS_STAKING_ADDRESS).then((newHasApprovedStaking: boolean): void => {
+    contract.isApprovedForAll(account.address, ONCHAIN_MONSTERS_STAKING_ADDRESS).then((newHasApprovedStaking: boolean): void => {
       setHasApprovedStaking(newHasApprovedStaking);
     });
-    const monstersBalance = await contract.balanceOf(accountId);
-    const ownedTokenIds = await Promise.all(arrayWithRange(0, monstersBalance).map(async (index: number): Promise<number> => (await contract.tokenOfOwnerByIndex(accountId, index)).toNumber()));
+    const monstersBalance = await contract.balanceOf(account.address);
+    const ownedTokenIds = await Promise.all(arrayWithRange(0, monstersBalance).map(async (index: number): Promise<number> => (await contract.tokenOfOwnerByIndex(account.address, index)).toNumber()));
     const newOwnedTokens = await Promise.all(ownedTokenIds.map(async (tokenId: number): Promise<Token> => {
       const tokenUri = await contract.tokenURI(tokenId);
       const data = JSON.parse(base64DecodeUnicode(tokenUri.replace('data:application/json;base64,', '')));
       return { registryAddress: ONCHAIN_MONSTERS_ADDRESS, tokenId, name: data.name, image: data.image };
     }));
     setOwnedTokens(newOwnedTokens);
-    const stakedTokenIds = (await stakingContract.getTokensStaked(accountId)).map((tokenId: BigNumber): number => tokenId.toNumber());
+    const stakedTokenIds = (await stakingContract.getTokensStaked(account.address)).map((tokenId: BigNumber): number => tokenId.toNumber());
     const newStakedTokens = await Promise.all(stakedTokenIds.map(async (tokenId: number): Promise<Token> => {
       const tokenUri = await contract.tokenURI(tokenId);
       const data = JSON.parse(base64DecodeUnicode(tokenUri.replace('data:application/json;base64,', '')));
       return { registryAddress: ONCHAIN_MONSTERS_ADDRESS, tokenId, name: data.name, image: data.image };
     }));
     setStakedTokens(newStakedTokens);
-  }, [account, accountId, contract, stakingContract]);
+  }, [account, contract, stakingContract]);
 
   React.useEffect((): void => {
     loadData();
@@ -112,7 +112,7 @@ export const HomePage = (): React.ReactElement => {
     setApproveStakingTransaction(null);
     setApproveStakingTransactionError(null);
     setApproveStakingTransactionReceipt(null);
-    const contractWithSigner = contract.connect(account);
+    const contractWithSigner = contract.connect(account.signer);
     try {
       const newApproveStakingTransaction = await contractWithSigner.setApprovalForAll(ONCHAIN_MONSTERS_STAKING_ADDRESS, true);
       setApproveStakingTransaction(newApproveStakingTransaction);
@@ -138,7 +138,7 @@ export const HomePage = (): React.ReactElement => {
     setStakingTransaction(null);
     setStakingTransactionError(null);
     setStakingTransactionReceipt(null);
-    const stakingContractWithSigner = stakingContract.connect(account);
+    const stakingContractWithSigner = stakingContract.connect(account.signer);
     try {
       const newStakingTransaction = await stakingContractWithSigner.stakeByIds(chosenTokenIds);
       setStakingTransaction(newStakingTransaction);
@@ -164,7 +164,7 @@ export const HomePage = (): React.ReactElement => {
     setUnstakingTransaction(null);
     setUnstakingTransactionError(null);
     setUnstakingTransactionReceipt(null);
-    const stakingContractWithSigner = stakingContract.connect(account);
+    const stakingContractWithSigner = stakingContract.connect(account.signer);
     try {
       const newUnstakingTransaction = await stakingContractWithSigner.unstakeAll();
       setUnstakingTransaction(newUnstakingTransaction);
@@ -190,7 +190,7 @@ export const HomePage = (): React.ReactElement => {
     setApproveDoughSpendTransaction(null);
     setApproveDoughSpendTransactionError(null);
     setApproveDoughSpendTransactionReceipt(null);
-    const stakingContractWithSigner = stakingContract.connect(account);
+    const stakingContractWithSigner = stakingContract.connect(account.signer);
     try {
       const newApproveDoughSpendTransaction = await stakingContractWithSigner.approve(ONCHAIN_MONSTERS_ADDRESS, ethers.utils.parseEther('1000'));
       setApproveDoughSpendTransaction(newApproveDoughSpendTransaction);
@@ -216,7 +216,7 @@ export const HomePage = (): React.ReactElement => {
     setBuyMonsterTransaction(null);
     setBuyMonsterTransactionError(null);
     setBuyMonsterTransactionReceipt(null);
-    const contractWithSigner = contract.connect(account);
+    const contractWithSigner = contract.connect(account.signer);
     try {
       const newBuyMonsterTransaction = await contractWithSigner.mintMonster();
       setBuyMonsterTransaction(newBuyMonsterTransaction);
@@ -260,9 +260,15 @@ export const HomePage = (): React.ReactElement => {
           <MarkdownText textVariant='large' source={'This project is open-source. You can check it out and even contribute on [GitHub](https://github.com/kibalabs/onchain-monsters-app) 🔥.'} />
         </Stack.Item>
         <Spacing variant={PaddingSize.Wide2} />
-        { accountId ? (
+        { account ? (
           <React.Fragment>
-            <Text variant='note'>{`Connected to ${accountId}`}</Text>
+            <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+              <Text variant='note'>Connected to:</Text>
+              <Box width='1em' height='1em'>
+                <Image source={`https://web3-images-api.kibalabs.com/v1/accounts/${account.address}/image`} alternativeText='' />
+              </Box>
+              <Text variant='note'>{truncateMiddle(account.address, 15)}</Text>
+            </Stack>
             <Spacing variant={PaddingSize.Wide} />
             { doughBalance === undefined ? (
               <LoadingSpinner />
@@ -433,7 +439,11 @@ export const HomePage = (): React.ReactElement => {
             )}
           </React.Fragment>
         ) : (
-          <Button variant='large' text='Connect Wallet' onClicked={onConnectClicked} />
+          <React.Fragment>
+            <Spacing variant={PaddingSize.Wide3} />
+            <Button variant='large-primary' text='Connect Wallet' onClicked={onConnectClicked} />
+            <Spacing variant={PaddingSize.Wide3} />
+          </React.Fragment>
         )}
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <Spacing variant={PaddingSize.Wide2} />
