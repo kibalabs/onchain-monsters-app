@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { truncateMiddle } from '@kibalabs/core';
 import { Alignment, Box, Button, Direction, EqualGrid, IconButton, Image, KibaIcon, LinkBase, LoadingSpinner, MarkdownText, PaddingSize, ResponsiveContainingView, Spacing, Stack, Text, TextAlignment, useColors } from '@kibalabs/ui-react';
 import { BigNumber, ethers } from 'ethers';
 
@@ -9,7 +10,6 @@ import { SponsorView } from '../components/SponsorView';
 import { Token, TokenCard } from '../components/TokenCard';
 import OnChainMonstersABI from '../OnChainMonstersABI.json';
 import OnChainMonstersStakingABI from '../OnChainMonstersStakingABI.json';
-import { truncateMiddle } from '@kibalabs/core';
 
 const arrayWithRange = (start: number, end: number): number[] => {
   return Array(end - start).fill().map((item, index) => start + index);
