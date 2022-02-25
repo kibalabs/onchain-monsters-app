@@ -23,7 +23,7 @@ jobs:
     needs: deploy-app
     runs-on: ubuntu-latest
     env:
-      NAME: web3-images-app
+      NAME: onchain-monsters-app
       DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
     steps:
       - name: executing remote ssh commands
@@ -36,7 +36,7 @@ jobs:
           envs: DOCKER_IMAGE,NAME
           script_stop: true
           script: |
-            url="web3-images.kibalabs.com"
+            url="onchain-monsters.kibalabs.com"
             varsFile=~/.${NAME}.vars
             docker pull ${DOCKER_IMAGE}
             docker stop ${NAME} && docker rm ${NAME} || true

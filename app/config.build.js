@@ -1,10 +1,10 @@
 /* eslint-disable */
 const InjectSeoPlugin = require('@kibalabs/build/scripts/plugins/injectSeoPlugin');
 
-const title = 'web3images';
-const description = 'web3images is the easiest way to add avatars for eth accounts in your dapp 🖼';
-const url = 'https://web3-images.kibalabs.com'
-const imageUrl = `${url}/assets/w3i-banner.png`;
+const title = 'On-Chain Monsters';
+const description = 'The un-official dapp for interacting with On-Chain Monsters';
+const url = 'https://onchain-monsters.kibalabs.com'
+const imageUrl = `${url}/assets/banner.png`;
 
 const seoTags = [
   new InjectSeoPlugin.MetaTag('description', description),
