@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { IRoute, Router, useInitialization } from '@kibalabs/core-react';
-import { Head, KibaApp } from '@kibalabs/ui-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
+import { Head, KibaApp } from '@kibalabs/ui-react';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { AccountControlProvider } from './AccountContext';
