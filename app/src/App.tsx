@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { IRoute, Router } from '@kibalabs/core-react';
+import { IRoute, Router, useInitialization } from '@kibalabs/core-react';
+import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { Head, KibaApp } from '@kibalabs/ui-react';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -10,15 +11,15 @@ import { HomePage } from './pages/HomePage';
 import { buildAppTheme } from './theme';
 
 const theme = buildAppTheme();
-// const tracker = new EveryviewTracker('8d6b7f803294435881c5e70ef9783011', true);
+const tracker = new EveryviewTracker('da82fef72d614762b253d0bfe0503226', true);
 
 const globals: IGlobals = {
 };
 
 export const App = (): React.ReactElement => {
-  // useInitialization((): void => {
-  //   tracker.trackApplicationOpen();
-  // });
+  useInitialization((): void => {
+    tracker.trackApplicationOpen();
+  });
 
   const routes: IRoute[] = [
     { path: '/', page: HomePage },

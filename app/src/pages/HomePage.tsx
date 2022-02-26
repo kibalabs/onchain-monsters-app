@@ -249,6 +249,10 @@ export const HomePage = (): React.ReactElement => {
     }
   };
 
+  const getShareText = (): string => {
+    return encodeURIComponent('Check out the @OnChainMonsters un-official app by the guys from @mdtp_app https://onchain-monsters.kibalabs.com');
+  };
+
   return (
     <ResponsiveContainingView sizeResponsive={{ base: 12, medium: 10, large: 8 }}>
       <Stack direction={Direction.Vertical} isFullWidth={true} isFullHeight={true} childAlignment={Alignment.Center} contentAlignment={Alignment.Center} padding={PaddingSize.Wide2} shouldAddGutters={true}>
@@ -440,6 +444,8 @@ export const HomePage = (): React.ReactElement => {
                 )}
               </React.Fragment>
             )}
+            <Spacing variant={PaddingSize.Wide} />
+            <Button text='Share the love' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
           </React.Fragment>
         ) : (
           <React.Fragment>
