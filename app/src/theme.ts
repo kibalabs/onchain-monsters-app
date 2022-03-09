@@ -27,6 +27,27 @@ export const buildAppTheme = (): ITheme => {
         margin: '0',
       },
     },
+    buttons: {
+      default: {
+        disabled: {
+          default: {
+            background: {
+              'background-color': '$colors.backgroundLight10',
+              'border-width': '0',
+            },
+          },
+        },
+      },
+      primary: {
+        normal: {
+          default: {
+            background: {
+              'border-width': '0',
+            },
+          },
+        },
+      },
+    },
     selectableViews: {
       default: {
         normal: {

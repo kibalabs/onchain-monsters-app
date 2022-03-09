@@ -55,6 +55,9 @@ export const HomePage = (): React.ReactElement => {
   const [buyMonsterTransaction, setBuyMonsterTransaction] = React.useState<ethers.ContractTransaction | null>(null);
   const [buyMonsterTransactionError, setBuyMonsterTransactionError] = React.useState<Error | null>(null);
   const [buyMonsterTransactionReceipt, setBuyMonsterTransactionReceipt] = React.useState<ethers.ContractReceipt | null>(null);
+  const [burnTransaction, setBurnTransaction] = React.useState<ethers.ContractTransaction | null>(null);
+  const [burnTransactionError, setBurnTransactionError] = React.useState<Error | null>(null);
+  const [burnTransactionReceipt, setBurnTransactionReceipt] = React.useState<ethers.ContractReceipt | null>(null);
 
   const onConnectClicked = (): void => {
     onLinkAccountsClicked();
@@ -103,6 +106,7 @@ export const HomePage = (): React.ReactElement => {
       return { registryAddress: ONCHAIN_MONSTERS_ADDRESS, tokenId, name: data.name, image: data.image };
     }));
     setStakedTokens(newStakedTokens);
+    setChosenTokenIds([]);
   }, [account, contract, stakingContract]);
 
   React.useEffect((): void => {
@@ -160,6 +164,32 @@ export const HomePage = (): React.ReactElement => {
   React.useEffect((): void => {
     waitForStakingTransaction();
   }, [waitForStakingTransaction]);
+
+  const onBurnToMintClicked = React.useCallback(async (): Promise<void> => {
+    setBurnTransaction(null);
+    setBurnTransactionError(null);
+    setBurnTransactionReceipt(null);
+    const contractWithSigner = contract.connect(account.signer);
+    try {
+      const newBurnTransaction = await contractWithSigner.burnForMint(chosenTokenIds[0]);
+      setBurnTransaction(newBurnTransaction);
+    } catch (error: unknown) {
+      setBurnTransactionError(error as Error);
+    }
+  }, [contract, account, chosenTokenIds]);
+
+  const waitForBurnTransaction = React.useCallback(async (): Promise<void> => {
+    if (burnTransaction) {
+      const receipt = await burnTransaction.wait();
+      setBurnTransaction(null);
+      setBurnTransactionReceipt(receipt);
+      loadData();
+    }
+  }, [burnTransaction, loadData]);
+
+  React.useEffect((): void => {
+    waitForBurnTransaction();
+  }, [waitForBurnTransaction]);
 
   const onUnstakeAllClicked = React.useCallback(async (): Promise<void> => {
     setUnstakingTransaction(null);
@@ -266,6 +296,17 @@ export const HomePage = (): React.ReactElement => {
         <Stack.Item alignment={Alignment.Start}>
           <MarkdownText textVariant='large' source={'This project is open-source. You can check it out and even contribute on [GitHub](https://github.com/kibalabs/onchain-monsters-app) 🔥.'} />
         </Stack.Item>
+        <Spacing variant={PaddingSize.Wide} />
+        <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+          <Button iconLeft={<KibaIcon iconId='ion-newspaper' />} text='Contract' target={`https://etherscan.io/address/${ONCHAIN_MONSTERS_ADDRESS}`} />
+          <Button iconLeft={<KibaIcon iconId='ion-newspaper-outline' />} text='Staking Contract' target={`https://etherscan.io/address/${ONCHAIN_MONSTERS_STAKING_ADDRESS}`} />
+        </Stack>
+        <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+          <IconButton icon={<KibaIcon iconId='feather-shopping-bag' />} target='https://opensea.io/collection/on-chain-monsters' />
+          <IconButton icon={<KibaIcon iconId='feather-shopping-cart' />} target={`https://looksrare.org/collections/${ONCHAIN_MONSTERS_ADDRESS}`} />
+          <IconButton icon={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/OnChainMonsters'} />
+          <IconButton icon={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/MDGvartz'} />
+        </Stack>
         <Spacing variant={PaddingSize.Wide2} />
         { account ? (
           <React.Fragment>
@@ -363,7 +404,16 @@ export const HomePage = (): React.ReactElement => {
                       </Stack>
                     )}
                     {stakingTransactionError && (
-                      <Text variant='error'>{`Error while buyMonster: ${stakingTransactionError.message}`}</Text>
+                      <Text variant='error'>{`Error while staking: ${stakingTransactionError.message}`}</Text>
+                    )}
+                    {burnTransactionReceipt !== null && (
+                      <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
+                        <KibaIcon iconId='ion-checkmark-circle' variant='large' _color={colors.success} />
+                        <Text variant='success'>Burn to mint successful</Text>
+                      </Stack>
+                    )}
+                    {burnTransactionError && (
+                      <Text variant='error'>{`Error while burning: ${burnTransactionError.message}`}</Text>
                     )}
                     {stakingTransaction ? (
                       <Stack direction={Direction.Horizontal} shouldAddGutters={true} contentAlignment={Alignment.Center} childAlignment={Alignment.Center}>
@@ -371,10 +421,17 @@ export const HomePage = (): React.ReactElement => {
                         <Text>Staking...</Text>
                         <IconButton variant='small' target={`https://etherscan.io/tx/${stakingTransaction.hash}`} icon={<KibaIcon iconId='ion-open' />} />
                       </Stack>
+                    ) : burnTransaction ? (
+                      <Stack direction={Direction.Horizontal} shouldAddGutters={true} contentAlignment={Alignment.Center} childAlignment={Alignment.Center}>
+                        <LoadingSpinner />
+                        <Text>Burning for mint...</Text>
+                        <IconButton variant='small' target={`https://etherscan.io/tx/${burnTransaction.hash}`} icon={<KibaIcon iconId='ion-open' />} />
+                      </Stack>
                     ) : (
-                      <React.Fragment>
+                      <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
                         <Button variant='primary' text={`Stake ${chosenTokenIds.length} monsters`} onClicked={onStakeClicked} isEnabled={chosenTokenIds.length > 0} />
-                      </React.Fragment>
+                        <Button text={'Burn to mint'} onClicked={onBurnToMintClicked} isEnabled={chosenTokenIds.length === 1} />
+                      </Stack>
                     )}
                   </React.Fragment>
                 ) : (
@@ -444,7 +501,7 @@ export const HomePage = (): React.ReactElement => {
                 )}
               </React.Fragment>
             )}
-            <Spacing variant={PaddingSize.Wide} />
+            <Spacing variant={PaddingSize.Wide2} />
             <Button text='Share the love' iconLeft={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/intent/tweet?text=${getShareText()}`} />
           </React.Fragment>
         ) : (
