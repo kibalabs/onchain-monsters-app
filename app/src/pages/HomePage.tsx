@@ -302,10 +302,10 @@ export const HomePage = (): React.ReactElement => {
           <Button iconLeft={<KibaIcon iconId='ion-newspaper-outline' />} text='Staking Contract' target={`https://etherscan.io/address/${ONCHAIN_MONSTERS_STAKING_ADDRESS}`} />
         </Stack>
         <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
-          <IconButton icon={<KibaIcon iconId='feather-shopping-bag' />}  target='https://opensea.io/collection/on-chain-monsters' />
-          <IconButton icon={<KibaIcon iconId='feather-shopping-cart' />}  target={`https://looksrare.org/collections/${ONCHAIN_MONSTERS_ADDRESS}`}/>
-          <IconButton icon={<KibaIcon iconId='ion-logo-twitter' />} target={`https://twitter.com/OnChainMonsters`}/>
-          <IconButton icon={<KibaIcon iconId='ion-logo-discord' />} target={`https://discord.gg/MDGvartz`}/>
+          <IconButton icon={<KibaIcon iconId='feather-shopping-bag' />} target='https://opensea.io/collection/on-chain-monsters' />
+          <IconButton icon={<KibaIcon iconId='feather-shopping-cart' />} target={`https://looksrare.org/collections/${ONCHAIN_MONSTERS_ADDRESS}`} />
+          <IconButton icon={<KibaIcon iconId='ion-logo-twitter' />} target={'https://twitter.com/OnChainMonsters'} />
+          <IconButton icon={<KibaIcon iconId='ion-logo-discord' />} target={'https://discord.gg/MDGvartz'} />
         </Stack>
         <Spacing variant={PaddingSize.Wide2} />
         { account ? (
@@ -430,7 +430,7 @@ export const HomePage = (): React.ReactElement => {
                     ) : (
                       <Stack direction={Direction.Horizontal} shouldAddGutters={true}>
                         <Button variant='primary' text={`Stake ${chosenTokenIds.length} monsters`} onClicked={onStakeClicked} isEnabled={chosenTokenIds.length > 0} />
-                        <Button text={`Burn to mint`} onClicked={onBurnToMintClicked} isEnabled={chosenTokenIds.length === 1} />
+                        <Button text={'Burn to mint'} onClicked={onBurnToMintClicked} isEnabled={chosenTokenIds.length === 1} />
                       </Stack>
                     )}
                   </React.Fragment>
