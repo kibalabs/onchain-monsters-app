@@ -5,12 +5,11 @@ import { Alignment, Box, Button, Direction, EqualGrid, IconButton, Image, KibaIc
 import { BigNumber, ethers } from 'ethers';
 
 import { useAccount, useOnLinkAccountsClicked, useWeb3 } from '../AccountContext';
-import { SelectableView } from '../components/SelectableView';
 import { Footer } from '../components/Footer';
+import { SelectableView } from '../components/SelectableView';
 import { Token, TokenCard } from '../components/TokenCard';
 import OnChainMonstersABI from '../OnChainMonstersABI.json';
 import OnChainMonstersStakingABI from '../OnChainMonstersStakingABI.json';
-import { useInitialization, useLocation, useNavigator } from '@kibalabs/core-react';
 
 const arrayWithRange = (start: number, end: number): number[] => {
   return Array(end - start).fill().map((item, index) => start + index);
@@ -33,7 +32,6 @@ export const HomePage = (): React.ReactElement => {
   const account = useAccount();
   const onLinkAccountsClicked = useOnLinkAccountsClicked();
   const colors = useColors();
-  const navigator = useNavigator();
   const [chosenTokenIds, setChosenTokenIds] = React.useState<number[]>([]);
   const [ownedTokens, setOwnedTokens] = React.useState<Token[] | undefined | null>(undefined);
   const [stakedTokens, setStakedTokens] = React.useState<Token[] | undefined | null>(undefined);
@@ -60,12 +58,6 @@ export const HomePage = (): React.ReactElement => {
   const [burnTransaction, setBurnTransaction] = React.useState<ethers.ContractTransaction | null>(null);
   const [burnTransactionError, setBurnTransactionError] = React.useState<Error | null>(null);
   const [burnTransactionReceipt, setBurnTransactionReceipt] = React.useState<ethers.ContractReceipt | null>(null);
-
-  useInitialization((): void => {
-    if (window.location.host === 'onchain-monsters.kibalabs.com') {
-      navigator.navigateTo('https://onchain-monsters.tokenpage.xyz');
-    }
-  });
 
   const onConnectClicked = (): void => {
     onLinkAccountsClicked();
