@@ -9,6 +9,7 @@ import { AccountControlProvider } from './AccountContext';
 import { GlobalsProvider, IGlobals } from './globalsContext';
 import { HomePage } from './pages/HomePage';
 import { buildAppTheme } from './theme';
+import { ToastContainer } from 'react-toastify';
 
 const theme = buildAppTheme();
 const tracker = new EveryviewTracker('da82fef72d614762b253d0bfe0503226', true);
@@ -18,10 +19,12 @@ const globals: IGlobals = {
 
 export const App = (): React.ReactElement => {
   useInitialization((): void => {
-    tracker.trackApplicationOpen();
+    tracker.initialize().then((): void => {
+      tracker.trackApplicationOpen();
+    });
   });
 
-  const routes: IRoute[] = [
+  const routes: IRoute<IGlobals>[] = [
     { path: '/', page: HomePage },
   ];
 
@@ -35,6 +38,7 @@ export const App = (): React.ReactElement => {
           <Router routes={routes} />
         </GlobalsProvider>
       </AccountControlProvider>
+      <ToastContainer />
     </KibaApp>
   );
 };

@@ -3,7 +3,7 @@ const InjectSeoPlugin = require('@kibalabs/build/scripts/plugins/injectSeoPlugin
 
 const title = 'On-Chain Monsters';
 const description = 'The un-official dapp for interacting with On-Chain Monsters';
-const url = 'https://onchain-monsters.kibalabs.com'
+const url = 'https://onchain-monsters.tokenpage.xyz'
 const imageUrl = `${url}/assets/banner.png`;
 
 const seoTags = [
