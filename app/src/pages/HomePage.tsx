@@ -5,8 +5,8 @@ import { Alignment, Box, Button, Direction, EqualGrid, IconButton, Image, KibaIc
 import { BigNumber, ethers } from 'ethers';
 
 import { useAccount, useOnLinkAccountsClicked, useWeb3 } from '../AccountContext';
+import { Footer } from '../components/Footer';
 import { SelectableView } from '../components/SelectableView';
-import { SponsorView } from '../components/SponsorView';
 import { Token, TokenCard } from '../components/TokenCard';
 import OnChainMonstersABI from '../OnChainMonstersABI.json';
 import OnChainMonstersStakingABI from '../OnChainMonstersStakingABI.json';
@@ -514,7 +514,7 @@ export const HomePage = (): React.ReactElement => {
         <Stack.Item growthFactor={1} shrinkFactor={1}>
           <Spacing variant={PaddingSize.Wide2} />
         </Stack.Item>
-        <SponsorView />
+        <Footer />
       </Stack>
     </ResponsiveContainingView>
   );
