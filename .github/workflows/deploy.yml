@@ -27,7 +27,7 @@ jobs:
           cache-from: type=gha,scope=app
           cache-to: type=gha,mode=max,scope=app
           tags: ${{ env.DOCKER_IMAGE }}
-  run-app:
+  run-app0old:
     needs: deploy-app
     runs-on: ubuntu-latest
     env:
@@ -45,7 +45,39 @@ jobs:
           envs: DOCKER_IMAGE,NAME,VERSION
           script_stop: true
           script: |
-            url="onchain-monsters.kibalabs.com,onchain-monsters.tokenpage.xyz"
+            url="onchain-monsters.kibalabs.com"
+            docker pull ${DOCKER_IMAGE}
+            docker stop ${NAME} && docker rm ${NAME} || true
+            docker run \
+              --name ${NAME} \
+              --detach \
+              --publish-all \
+              --restart on-failure \
+              --env NAME=${NAME} \
+              --env VERSION=${VERSION} \
+              --env VIRTUAL_HOST=${url} \
+              --env LETSENCRYPT_HOST=${url} \
+              --env-file ~/.${NAME}.vars \
+              ${DOCKER_IMAGE}
+  run-app:
+    needs: deploy-app
+    runs-on: ubuntu-latest
+    env:
+      NAME: onchain-monsters-app
+      VERSION: ${{ github.sha }}
+      DOCKER_IMAGE: ghcr.io/${{ github.repository }}-app:latest
+    steps:
+      - name: executing remote ssh commands
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.MDTPBOX_URL }}
+          username: ${{ secrets.MDTPBOX_USER }}
+          key: ${{ secrets.MDTPBOX_SSH_KEY }}
+          port: ${{ secrets.MDTPBOX_PORT }}
+          envs: DOCKER_IMAGE,NAME,VERSION
+          script_stop: true
+          script: |
+            url="onchain-monsters.tokenpage.xyz"
             docker pull ${DOCKER_IMAGE}
             docker stop ${NAME} && docker rm ${NAME} || true
             docker run \

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { IRoute, Router, useInitialization, useNavigator } from '@kibalabs/core-react';
+import { IRoute, Router, useInitialization } from '@kibalabs/core-react';
 import { EveryviewTracker } from '@kibalabs/everyview-tracker';
 import { Head, KibaApp } from '@kibalabs/ui-react';
 import { ToastContainer } from 'react-toastify';
@@ -18,15 +18,13 @@ const globals: IGlobals = {
 };
 
 export const App = (): React.ReactElement => {
-  const navigator = useNavigator();
-
   useInitialization((): void => {
     tracker.initialize().then((): void => {
       tracker.trackApplicationOpen();
-    });
-
+    })
+    ;
     if (window.location.host === 'onchain-monsters.kibalabs.com') {
-      navigator.navigateTo('https://onchain-monsters.tokenpage.xyz');
+      window.location.replace('https://onchain-monsters.tokenpage.xyz');
     }
   });
 
