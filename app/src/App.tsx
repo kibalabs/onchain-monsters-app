@@ -21,8 +21,7 @@ export const App = (): React.ReactElement => {
   useInitialization((): void => {
     tracker.initialize().then((): void => {
       tracker.trackApplicationOpen();
-    })
-    ;
+    });
     if (window.location.host === 'onchain-monsters.kibalabs.com') {
       window.location.replace('https://onchain-monsters.tokenpage.xyz');
     }
